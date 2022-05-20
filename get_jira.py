@@ -18,7 +18,7 @@ def create_jira_conn(server, api_key):
 def get_input_items(filepath):
     with open(filepath, 'r') as f:
         raw_rows=f.readlines()
-    return [record.replace('\n','') for record in raw_rows]
+    return [record.strip(' \t\n') for record in raw_rows]
 
 def get_issue_status_changelog(issue_id, jira_obj):
     result = []
