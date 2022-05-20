@@ -1,16 +1,21 @@
 from jira import JIRA
 from os import environ
 
-#auth_jira = JIRA(token_auth='API token')
-
-SERVER = 'https://msjira.morningstar.com'
 INPUT_FILE = 'input'
+JIRA_KEY_ENV_VAR = 'JIRA_API'
+JIRA_SERVER_ENV_VAR_NAME = 'JIRA_SERVER'
 
 def get_jira_api_key():
-    api_key = environ.get('JIRA_API')
+    api_key = environ.get(JIRA_KEY_ENV_VAR)
     if api_key is None:
-        raise Exception("JIRA_API environment variable has not been set up.")
+        raise Exception(f"{JIRA_KEY_ENV_VAR} environment variable has not been set up.")
     return api_key
+
+def get_jira_server():
+    jira_server = environ.get(JIRA_SERVER_ENV_VAR_NAME)
+    if jira_server is None:
+        raise Exception(f"{JIRA_SERVER_ENV_VAR_NAME} environment variable has not been set up.")
+    return jira_server
 
 def create_jira_conn(server, api_key):
     return JIRA(server=server, token_auth=api_key)
@@ -31,8 +36,9 @@ def get_issue_status_changelog(issue_id, jira_obj):
     return result
 
 def run():
+    server = get_jira_server()
     api_key = get_jira_api_key()
-    jira = create_jira_conn(SERVER, api_key)
+    jira = create_jira_conn(server, api_key)
     issue_id_list = get_input_items(INPUT_FILE)
     history_list = []
     for issue_id in issue_id_list:
