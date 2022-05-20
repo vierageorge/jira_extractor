@@ -20,18 +20,24 @@ def get_input_items(filepath):
         raw_rows=f.readlines()
     return [record.replace('\n','') for record in raw_rows]
 
+def get_issue_status_changelog(issue_id, jira_obj):
+    result = []
+    issue = jira_obj.issue(issue_id, expand='changelog')
+    changelog = issue.changelog
+    for history in changelog.histories:
+        for item in history.items:
+            if item.field == 'status':
+                result.append([issue_id, history.created, history.author.name, item.fromString, item.toString])
+    return result
+
 def run():
     api_key = get_jira_api_key()
     jira = create_jira_conn(SERVER, api_key)
     issue_id_list = get_input_items(INPUT_FILE)
+    history_list = []
     for issue_id in issue_id_list:
-        issue = jira.issue(issue_id, expand='changelog')
-        changelog = issue.changelog
-        for history in changelog.histories:
-            for item in history.items:
-                if item.field == 'status':
-                    row = '	'.join([issue_id, history.created, history.author.name, item.fromString, item.toString])
-                    print(row)
+        history_list += get_issue_status_changelog(issue_id, jira)
+    list(map(lambda record:print(*record, sep='\t'), history_list))
 
 if __name__ == '__main__':
     run()
